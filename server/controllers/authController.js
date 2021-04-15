@@ -8,6 +8,7 @@ const jwt = require("jsonwebtoken");
 
 module.exports.loginAuthentication = async(req, res, next) => {
 
+
     const errors = validationResult(req);
     if(!errors.isEmpty()) return res.status(401).send({errors: errors.array()});
 
@@ -25,6 +26,7 @@ module.exports.loginAuthentication = async(req, res, next) => {
         if(err) return next(err);
         if(!val) return res.status(401).send({error: 'Invalid credentials'});
         res.send({user:{_id: user._id, email: user.email, username: user.username, fullName: user.fullName}, token: jwt.sign({id: user._id}, process.env.JWT_SECRET, {expiresIn: '5h'})});
+        
     });
 
 }
