@@ -2,9 +2,18 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const TimeEntriesSchema = new Schema({
-    entry: [{
+    punchIn: {
         type: String,
-    }],
+    },
+    punchOut: {
+        type: String,
+        default: null
+    },
+
+    // entry: [{
+    //     type: String,
+    // }],
+
     employee: {
         type: Schema.ObjectId,
         ref: 'User'
@@ -13,7 +22,8 @@ const TimeEntriesSchema = new Schema({
         type: String
     },
     totalHours: {
-        type: Number
+        type: Number,
+        default: null
     }
 });
 

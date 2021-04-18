@@ -26,6 +26,11 @@ const userSchema = new Schema({
         type: Boolean,
         default: false
     },
+    clockInTime: {
+        type: Schema.ObjectId,
+        ref: 'TimeEntries',
+        default: null
+    }
 });
 
 userSchema.pre('save', async function(next){

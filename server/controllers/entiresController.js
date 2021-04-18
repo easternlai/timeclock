@@ -5,46 +5,38 @@ const ObjectId = require('mongodb').ObjectId;
 const moment = require('moment');
 
 module.exports.addEntry = async (req, res, next) => {
-    const { isClockedIn } = req.body;
     const userId = req.user.id;
     const today = moment().format('MM/DD/YYYY');
     try {
-        //if first time logging in for the day
-        const entryExist = await TimeEntries.findOne({ day: today, employee: ObjectId(userId) });
-        if (!entryExist) {
-            console.log("new entry created");
-            const newEntryStartShift = new TimeEntries({ entry: moment().format(), day: today, employee: userId, totalHours: null });
-            newEntryStartShift.save();
-
-            User.updateOne({ _id: userId }, { $set: { isClockedIn: true } }, (err, res) => {
+        const user = await User.findOne({_id: userId});
+         if(user.isClockedIn){
+             const test = await TimeEntries.updateOne({_id: user.clockInTime}, { $set: {punchOut: moment().format()}});
+             console.log(test);
+             User.updateOne({ _id: userId }, { $set: { isClockedIn: false, clockInTime: null } }, (err, res) => {
                 if (err) throw err;
-                console.log('User is clocked in');
+                console.log('User is clocked out');
             });
-            return res.send({isClockedIn: true});
-        } else {
-            TimeEntries.updateOne({employee: ObjectId(userId), day: today},{$push: {entry: moment().format()}}, (err, response)=>{
-                if (entryExist.entry.length %2 == 0){
-    
-                    User.updateOne({ _id: userId }, { $set: { isClockedIn: true } }, (err, res) => {
-                        if (err) throw err;
-                        console.log('User is clocked in');
-                    });
-    
-                    res.send({isClockedIn: true});
-                } else {
-                    
-                    User.updateOne({ _id: userId }, { $set: { isClockedIn: false } }, (err, res) => {
-                        if (err) throw err;
-                        console.log('User is clocked false');
-                    });
-                    res.send({isClockedIn: false});
-    
-            }
+            res.send('endshift')
+         }else{
+
+            const startShift = new TimeEntries({
+                punchIn: moment().format(),
+                employee: ObjectId(userId),
+                day: today
             });
 
-    }
+            await startShift.save();
+            console.log(startShift._id);
+            console.log(userId);
+            User.updateOne({ _id: userId }, { $set: { isClockedIn: true, clockInTime: ObjectId(startShift._id) } }, (err, res) => {
+                         if (err) throw err;
+                         console.log('User is clocked in');
+                     });
+            res.send('startShift');
+         }
+
     } catch (err) {
-        res.status(401).send({error: err});
+        res.status(401).send({ error: err });
     }
 
 }
@@ -53,15 +45,15 @@ module.exports.addEntry = async (req, res, next) => {
 module.exports.getEmployeeEntries = async (req, res, next) => {
 
     const userId = req.user.id;
-    
+
 
     try {
         const response = await TimeEntries.aggregate([
-            { $match: {employee: ObjectId(userId)}},
-            { $sort: {day:- 1} },
+            { $match: { employee: ObjectId(userId) } },
+            { $sort: { clockIn: 1 } },
         ]);
 
-        
+
         res.send(response);
 
     } catch (err) {
