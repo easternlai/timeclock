@@ -21,7 +21,11 @@ const userSchema = new Schema({
         type: String,
         required: true,
         minlength: 8,
-    }
+    },
+    isClockedIn: {
+        type: Boolean,
+        default: false
+    },
 });
 
 userSchema.pre('save', async function(next){

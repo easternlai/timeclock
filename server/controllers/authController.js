@@ -25,7 +25,7 @@ module.exports.loginAuthentication = async(req, res, next) => {
     bcrypt.compare(password, user.password, function (err, val){
         if(err) return next(err);
         if(!val) return res.status(401).send({error: 'Invalid credentials'});
-        res.send({user:{_id: user._id, email: user.email, username: user.username, fullName: user.fullName}, token: jwt.sign({id: user._id}, process.env.JWT_SECRET, {expiresIn: '5h'})});
+        res.send({user:{_id: user._id, email: user.email, username: user.username, fullName: user.fullName, isClockedIn: user.isClockedIn}, token: jwt.sign({id: user._id}, process.env.JWT_SECRET, {expiresIn: '5h'})});
         
     });
 
@@ -65,7 +65,7 @@ module.exports.register = async (req, res, next) => {
     user.save();
     //jwt token 
 
-    res.send({user:{_id: user._id, fullName: user.fullName, username: user.username, email: user.email}, token: jwt.sign({id: user._id}, process.env.JWT_SECRET, {expiresIn:'5h'})});
+    res.send({user:{_id: user._id, fullName: user.fullName, username: user.username, email: user.email, isClockedIn: user.isClockedIn}, token: jwt.sign({id: user._id}, process.env.JWT_SECRET, {expiresIn:'5h'})});
       
   } catch (err) {
       console.log(err);
