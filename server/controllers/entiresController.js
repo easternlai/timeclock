@@ -4,16 +4,19 @@ const ObjectId = require('mongodb').ObjectId;
 
 const moment = require('moment');
 
+const {sendPunch} =require('../handlers/socketHandler');
+
 module.exports.addEntry = async (req, res, next) => {
     const userId = req.user.id;
     const today = moment().format('MM/DD/YYYY');
     try {
         const user = await User.findOne({_id: userId});
          if(user.isClockedIn){
-             const test = await TimeEntries.updateOne({_id: user.clockInTime}, { $set: {punchOut: moment().format()}});
-             console.log(test);
+             await TimeEntries.updateOne({_id: user.clockInTime}, { $set: {punchOut: moment().format()}});
+            
              User.updateOne({ _id: userId }, { $set: { isClockedIn: false, clockInTime: null } }, (err, res) => {
                 if (err) throw err;
+                sendPunch(req, false, userId);
                 console.log('User is clocked out');
             });
             res.send('endshift')
@@ -30,6 +33,7 @@ module.exports.addEntry = async (req, res, next) => {
             console.log(userId);
             User.updateOne({ _id: userId }, { $set: { isClockedIn: true, clockInTime: ObjectId(startShift._id) } }, (err, res) => {
                          if (err) throw err;
+                         sendPunch(req, true, userId);
                          console.log('User is clocked in');
                      });
             res.send('startShift');

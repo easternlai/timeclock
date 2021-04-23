@@ -7,28 +7,37 @@ const jwt = require("jsonwebtoken");
 //@desc Registers user
 
 module.exports.loginAuthentication = async(req, res, next) => {
-
-
+    const { token } = req.headers;
     const errors = validationResult(req);
-    if(!errors.isEmpty()) return res.status(401).send({errors: errors.array()});
+    if(!errors.isEmpty() && !token) return res.status(401).send({errors: errors.array()});
 
     const {usernameOrEmail, password} = req.body;
 
-    // find out if user exist else send fail login
-
-    const user = await User.findOne({$or:[{email:usernameOrEmail}, {username:usernameOrEmail}]});
-
-    if(!user) return res.status(401).send({error: 'Invalid credentials'});
-
-    // find out if passwords are the same, if not send fail login
-
-    bcrypt.compare(password, user.password, function (err, val){
-        if(err) return next(err);
-        if(!val) return res.status(401).send({error: 'Invalid credentials'});
-        res.send({user:{_id: user._id, email: user.email, username: user.username, fullName: user.fullName, isClockedIn: user.isClockedIn}, token: jwt.sign({id: user._id}, process.env.JWT_SECRET, {expiresIn: '5h'})});
-        
-    });
-
+    try {
+        if(token){
+            const decodedId = await jwt.verify(token, process.env.JWT_SECRET).id;
+            const decodedUser = await User.findOne({_id: decodedId});
+            return res.send({user:{_id: decodedUser._id, email: decodedUser.email, username: decodedUser.username, fullName: decodedUser.fullName, isClockedIn: decodedUser.isClockedIn}, token});
+            
+        }
+    
+    
+        const user = await User.findOne({$or:[{email:usernameOrEmail}, {username:usernameOrEmail}]});
+    
+        if(!user) return res.status(401).send({error: 'Invalid credentials'});
+    
+        // find out if passwords are the same, if not send fail login
+    
+        bcrypt.compare(password, user.password, function (err, val){
+            if(err) return next(err);
+            if(!val) return res.status(401).send({error: 'Invalid credentials'});
+            res.send({user:{_id: user._id, email: user.email, username: user.username, fullName: user.fullName, isClockedIn: user.isClockedIn}, token: jwt.sign({id: user._id}, process.env.JWT_SECRET, {expiresIn: '5h'})});
+            
+        });
+    
+    } catch (err) {
+        console.log(err);
+    }
 }
 
 module.exports.register = async (req, res, next) => {

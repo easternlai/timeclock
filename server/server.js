@@ -1,7 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const socketio = require('socket.io');
-const jwt = require('jwt-simple');
+const jwt = require('jsonwebtoken');
 const app = express();
 
 const apiRouter = require('./routes');
@@ -41,13 +41,33 @@ app.use('/api', apiRouter);
 })()
 
 //listen for expres server
-app.listen(PORT, () => {
+const expressServer = app.listen(PORT, () => {
     console.log(`Backend listening on port ${PORT}`);
 })
 
-// use sockets
+const io = socketio(expressServer);
+app.set('socketio', io);
 
-//receive token via socket
+io.use((socket, next)=>{
+    const token = socket.handshake.query.token;
 
+    if(token){
+        try{
+            const user = jwt.verify(token, process.env.JWT_SECRET);
+            if(!user){
+                return next(new Error('Not authorized.'));
+            }
+            socket.user = user;
+            return next();
+        }catch(err){
+            next(err);
+        }
 
+    }else{
+        return next( new Error('Not authorized.'));
+    }
+}).on('connection', (socket)=>{
+    socket.join(socket.user.id);
+    console.log('socket connected: ', socket.id);
+});
 
