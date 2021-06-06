@@ -54,7 +54,7 @@ module.exports.getEmployeeEntries = async (req, res, next) => {
     try {
         const response = await TimeEntries.aggregate([
             { $match: { employee: ObjectId(userId) } },
-            { $sort: { clockIn: 1 } },
+            { $sort: { punchIn: -1 } },
         ]);
 
 
