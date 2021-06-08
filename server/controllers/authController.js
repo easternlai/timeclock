@@ -56,23 +56,20 @@ module.exports.register = async (req, res, next) => {
     const validatePasswordError = validatePassword(password);
 
     if(validateFullNameError){
-        console.log(validateFullNameError);
         return res.status(401).send({error: validateFullNameError});
     }
 
 
     if(validateEmailError){
-        console.log(validateEmailError)
         return res.status(401).send({error: validateEmailError});
     }
 
     if(validateUsernameError){
-        console.log(validateUsernameError);
         return res.status(401).send({error: validateUsernameError});
     }
 
     if(validatePasswordError){
-        console.log(validatePasswordError);
+        return res.status(401).send({error: validatePasswordError})
     }
 
   try {
@@ -98,6 +95,6 @@ module.exports.register = async (req, res, next) => {
     res.send({user:{_id: user._id, fullName: user.fullName, username: user.username, email: user.email, isClockedIn: user.isClockedIn}, token: jwt.sign({id: user._id}, process.env.JWT_SECRET, {expiresIn:'5h'})});
       
   } catch (err) {
-      console.log(err);
+      next(err);
   }
 }
