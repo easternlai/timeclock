@@ -2,17 +2,26 @@ version: '2'
 services:
   ui:
     build: ./client
+    networks:
+      - 'thenet'
     ports:
       - '3000:3000'
     depends_on:
       - api
   api:
     build: ./server
+    networks:
+      - 'thenet'
     ports:
       - '8080:8080'
     depends_on:
       - mongo
   mongo:
+    networks:
+      - 'thenet'
     image: mongo
     ports:
       - '27017:27017'
+
+networks:
+  thenet:
