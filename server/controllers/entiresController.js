@@ -29,8 +29,6 @@ module.exports.addEntry = async (req, res, next) => {
             });
 
             await startShift.save();
-            console.log(startShift._id);
-            console.log(userId);
             User.updateOne({ _id: userId }, { $set: { isClockedIn: true, clockInTime: ObjectId(startShift._id) } }, (err, res) => {
                          if (err) throw err;
                          sendPunch(req, true, userId);

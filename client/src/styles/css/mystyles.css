@@ -1,0 +1,17 @@
+tr , td  {
+    font-size: 20px;
+    font-family: Lato, sans-serif;
+    padding: 10px 50px 10px;
+    text-align: center;
+}
+
+.table-data {
+    min-width: 200px;
+}
+
+.error {
+    background-color: #FFE3E6;
+    margin-top: 20px;
+    padding: 10px 15px;
+    font-size: 15px;
+}

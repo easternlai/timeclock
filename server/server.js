@@ -3,10 +3,14 @@ const mongoose = require('mongoose');
 const socketio = require('socket.io');
 const jwt = require('jsonwebtoken');
 const app = express();
-
+const cors = require('cors');
 const apiRouter = require('./routes');
 
-const PORT = process.env.PORT || 9000;
+
+app.use(cors());
+
+
+const PORT = process.env.PORT || 8080;
 
 //require dotenv if not production
 
@@ -14,6 +18,7 @@ if (process.env.NODE_ENV !== 'production') {
     require('dotenv').config();
 }
 //body parsing middleware
+
 app.use(express.json());
 
 // use routes
